@@ -619,7 +619,7 @@ async function handleTestOffline() {
           </div>
           <!-- Fertilizer -->
           <div class="space-y-3">
-            <div class="rounded border border-amber-200 bg-amber-50/60 p-3 dark:border-amber-800/60 dark:bg-amber-900/10">
+            <div class="border border-amber-200 rounded bg-amber-50/60 p-3 dark:border-amber-800/60 dark:bg-amber-900/10">
               <div class="mb-2 text-sm text-amber-800 font-medium dark:text-amber-300">
                 施肥范围
               </div>

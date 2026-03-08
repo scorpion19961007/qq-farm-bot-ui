@@ -114,7 +114,7 @@ function getLandTypeName(level: number) {
     </div>
 
     <div class="mb-1 text-[10px] text-gray-400">
-      季数 {{ land.totalSeason > 0 ? (land.currentSeason + '/' + land.totalSeason) : '-/-' }}
+      季数 {{ land.totalSeason > 0 ? (`${land.currentSeason}/${land.totalSeason}`) : '-/-' }}
     </div>
     <!-- Status Badges -->
     <div class="mt-auto flex origin-bottom scale-90 gap-0.5 text-[10px]">
