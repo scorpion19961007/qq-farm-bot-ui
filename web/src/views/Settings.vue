@@ -27,6 +27,7 @@ const passwordSaving = ref(false)
 const offlineSaving = ref(false)
 const offlineTesting = ref(false)
 const qrSaving = ref(false)
+const runtimeClientSaving = ref(false)
 
 const token = computed(() => {
   return localStorage.getItem('admin_token') || '未登录'
@@ -383,6 +384,18 @@ const localQrLogin = ref({
   apiDomain: 'q.qq.com',
 })
 
+const localRuntimeClient = ref({
+  serverUrl: 'wss://gate-obt.nqf.qq.com/prod/ws',
+  clientVersion: '1.6.2.18_20260227',
+  os: 'iOS',
+  device_info: {
+    sys_software: 'iOS 26.2.1',
+    network: 'wifi',
+    memory: '7672',
+    device_id: 'iPhone X<iPhone18,3>',
+  },
+})
+
 const passwordForm = ref({
   old: '',
   new: '',
@@ -481,6 +494,9 @@ function syncLocalSettings() {
     localOffline.value.offlineDeleteEnabled = !!localOffline.value.offlineDeleteEnabled
     if (settings.value.qrLogin) {
       localQrLogin.value = JSON.parse(JSON.stringify(settings.value.qrLogin))
+    }
+    if (settings.value.runtimeClient) {
+      localRuntimeClient.value = JSON.parse(JSON.stringify(settings.value.runtimeClient))
     }
   }
 }
@@ -829,6 +845,22 @@ async function handleSaveQrLogin() {
     qrSaving.value = false
   }
 }
+async function handleSaveRuntimeClient() {
+  runtimeClientSaving.value = true
+  try {
+    const res = await settingStore.saveRuntimeClientConfig(localRuntimeClient.value as any)
+    if (res.ok) {
+      showAlert('运行时连接配置已保存，运行中账号将自动重连生效')
+    }
+    else {
+      showAlert(`保存失败: ${res.error || '未知错误'}`, 'danger')
+    }
+  }
+  finally {
+    runtimeClientSaving.value = false
+  }
+}
+
 async function handleSaveOffline() {
   localOffline.value.offlineDeleteSec = Math.max(1, Number.parseInt(String(localOffline.value.offlineDeleteSec), 10) || 1)
   localOffline.value.offlineDeleteEnabled = !!localOffline.value.offlineDeleteEnabled
@@ -1329,6 +1361,83 @@ async function handleTestOffline() {
               @click="handleChangePassword"
             >
               修改管理密码
+            </BaseButton>
+          </div>
+        </div>
+
+        <!-- QR Login Header -->
+        <div class="border-b border-t bg-gray-50/50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50">
+          <h3 class="flex items-center gap-2 text-base text-gray-900 font-bold dark:text-gray-100">
+            <div class="i-carbon-connection-signal" />
+            运行时连接配置
+          </h3>
+        </div>
+
+        <!-- Runtime Client Content -->
+        <div class="p-4 space-y-3">
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <BaseInput
+              v-model="localRuntimeClient.serverUrl"
+              label="服务器 WS 地址"
+              type="text"
+              placeholder="wss://.../ws"
+            />
+            <BaseInput
+              v-model="localRuntimeClient.clientVersion"
+              label="游戏版本号"
+              type="text"
+              placeholder="例如: 1.6.2.18_20260227"
+            />
+          </div>
+
+          <BaseSelect
+            v-model="localRuntimeClient.os"
+            label="系统 (os)"
+            :options="[{ label: 'iOS', value: 'iOS' }, { label: 'Android', value: 'Android' }]"
+          />
+
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <BaseInput
+              v-model="localRuntimeClient.device_info.sys_software"
+              label="系统版本号"
+              type="text"
+              placeholder="例如: iOS 26.2.1"
+            />
+            <BaseInput
+              v-model="localRuntimeClient.device_info.network"
+              label="网络类型"
+              type="text"
+              placeholder="例如: wifi"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <BaseInput
+              v-model="localRuntimeClient.device_info.memory"
+              label="内存大小（单位MB）"
+              type="text"
+              placeholder="例如: 7672"
+            />
+            <BaseInput
+              v-model="localRuntimeClient.device_info.device_id"
+              label="设备ID"
+              type="text"
+              placeholder="例如: iPhone X<iPhone18,3>"
+            />
+          </div>
+
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            保存后，运行中的账号会自动重连以生效。
+          </p>
+
+          <div class="flex justify-end">
+            <BaseButton
+              variant="primary"
+              size="sm"
+              :loading="runtimeClientSaving"
+              @click="handleSaveRuntimeClient"
+            >
+              保存运行时连接配置
             </BaseButton>
           </div>
         </div>
